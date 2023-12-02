@@ -1,5 +1,6 @@
 import pytest
 from main import Record, Game
+from typing import Tuple
 
 
 @pytest.mark.parametrize(
@@ -87,3 +88,45 @@ def test_game_parsing(game_str: str, expected_game: Game) -> None:
 def test_game_is_possible(game: Game, result: bool) -> None:
     x = game.is_possible(red=12, green=13, blue=14)
     assert x == result
+
+
+@pytest.mark.parametrize(
+    "game,minimum_cubes",
+    [
+        (
+            Game(
+                id=1,
+                records=[
+                    Record(red=4, green=0, blue=4),
+                    Record(red=1, green=2, blue=6),
+                    Record(red=0, green=2, blue=0),
+                ],
+            ),
+            (4, 2, 6),
+        ),
+        (
+            Game(
+                id=2,
+                records=[
+                    Record(red=0, green=2, blue=1),
+                    Record(red=1, green=3, blue=4),
+                    Record(red=0, green=1, blue=1),
+                ],
+            ),
+            (1, 3, 4),
+        ),
+        (
+            Game(
+                id=3,
+                records=[
+                    Record(red=20, green=8, blue=6),
+                    Record(red=4, green=13, blue=5),
+                    Record(red=1, green=5, blue=0),
+                ],
+            ),
+            (20, 13, 6),
+        ),
+    ],
+)
+def test_minimum_cubes(game: Game, minimum_cubes: Tuple[int, int, int]) -> None:
+    assert game.minimum_cubes() == minimum_cubes

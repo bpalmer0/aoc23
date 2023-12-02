@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
+from math import prod
 
 
 @dataclass
@@ -76,17 +77,36 @@ class Game:
         game_is_possible = all(records_possible)
         return game_is_possible
 
+    def minimum_cubes(self) -> Tuple[int, int, int]:
+        """
+        Return the minimum number of red, green, and blue cubes that must be in the bag for this game
+        to be possible
+        """
+        reds = [rec.red for rec in self.records]
+        greens = [rec.green for rec in self.records]
+        blues = [rec.blue for rec in self.records]
+        return (max(reds), max(greens), max(blues))
+
 
 def main() -> None:
     with open("input") as f:
         game_strs = f.readlines()
     game_strs = list(map(lambda s: s.strip(), game_strs))
     games = list(map(Game.from_str, game_strs))
+    # part 1
     possible_games = list(filter(lambda game: game.is_possible(12, 13, 14), games))
     possible_game_ids = list(map(lambda game: game.id, possible_games))
     print(f"Valid game IDs: {possible_game_ids}")
     id_sum = sum(possible_game_ids)
     print(f"Sum of IDs: {id_sum}")
+
+    # part 2
+    minimum_cubes = [game.minimum_cubes() for game in games]
+    print(f"Minimum cubes for games to be possible: {minimum_cubes}")
+    powers = [prod(min_cubes) for min_cubes in minimum_cubes]
+    print(f"Powers of all the minimum cube sets: {powers}")
+    power_sum = sum(powers)
+    print(f"Sum of powers: {power_sum}")
 
 
 if __name__ == "__main__":
