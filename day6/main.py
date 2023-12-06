@@ -17,6 +17,7 @@ class Race:
 
 
 def main():
+    # part 1
     with open("input") as f:
         lines = f.read().split("\n")
     times = [int(time) for time in lines[0].split(" ")[1:] if time != ""]
@@ -27,6 +28,13 @@ def main():
     ways_to_win = [len(race.winning_hold_times()) for race in races]
     print(f"{ways_to_win=}")
     print(f"product: {prod(ways_to_win)}")
+
+    # part 2
+    time = int(lines[0].removeprefix("Time:").replace(" ", ""))
+    distance = int(lines[1].removeprefix("Distance:").replace(" ", ""))
+    race = Race(time, distance)
+    ways_to_win = race.winning_hold_times()
+    print(f"Ways to win: {len(ways_to_win)}")
 
 
 if __name__ == "__main__":
