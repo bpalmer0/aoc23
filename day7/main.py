@@ -5,6 +5,7 @@ from functools import total_ordering
 
 
 class Card(IntEnum):
+    cJ = auto()
     c2 = auto()
     c3 = auto()
     c4 = auto()
@@ -14,7 +15,6 @@ class Card(IntEnum):
     c8 = auto()
     c9 = auto()
     cT = auto()
-    cJ = auto()
     cQ = auto()
     cK = auto()
     cA = auto()
@@ -56,20 +56,35 @@ class Hand:
         for card in self.cards:
             card_counts[card] += 1
 
-        if 5 in card_counts.values():
-            return HandType.FiveKind
-        elif 4 in card_counts.values():
-            return HandType.FourKind
-        elif 3 in card_counts.values() and 2 in card_counts.values():
-            return HandType.FullHouse
-        elif 3 in card_counts.values():
-            return HandType.ThreeKind
-        elif list(card_counts.values()).count(2) == 2:
-            return HandType.TwoPair
-        elif 2 in card_counts.values():
-            return HandType.OnePair
-        else:
-            return HandType.HighCard
+        # try making jokers each type of card and take the strongest type made
+        # it's never worth it to make jokers different cards
+        num_jokers = card_counts[Card.cJ]
+        card_counts[Card.cJ] = 0
+        best_type = HandType.HighCard
+        for card in Card:
+            card_counts[card] += num_jokers
+
+            if 5 in card_counts.values():
+                type = HandType.FiveKind
+            elif 4 in card_counts.values():
+                type = HandType.FourKind
+            elif 3 in card_counts.values() and 2 in card_counts.values():
+                type = HandType.FullHouse
+            elif 3 in card_counts.values():
+                type = HandType.ThreeKind
+            elif list(card_counts.values()).count(2) == 2:
+                type = HandType.TwoPair
+            elif 2 in card_counts.values():
+                type = HandType.OnePair
+            else:
+                type = HandType.HighCard
+
+            if type > best_type:
+                best_type = type
+
+            card_counts[card] -= num_jokers
+
+        return best_type
 
     def __eq__(self, other: "Hand") -> bool:
         return self.cards == other.cards

@@ -17,10 +17,10 @@ def test_hand_from_str(hand_str: str, hand: Hand) -> None:
     "hand,hand_type",
     [
         (Hand([Card.c3, Card.c2, Card.cT, Card.c3, Card.cK], 765), HandType.OnePair),
-        (Hand([Card.cT, Card.c5, Card.c5, Card.cJ, Card.c5], 684), HandType.ThreeKind),
+        (Hand([Card.cT, Card.c5, Card.c5, Card.cJ, Card.c5], 684), HandType.FourKind),
         (Hand([Card.cK, Card.cK, Card.c6, Card.c7, Card.c7], 28), HandType.TwoPair),
-        (Hand([Card.cK, Card.cT, Card.cJ, Card.cJ, Card.cT], 220), HandType.TwoPair),
-        (Hand([Card.cQ, Card.cQ, Card.cQ, Card.cJ, Card.cA], 483), HandType.ThreeKind),
+        (Hand([Card.cK, Card.cT, Card.cJ, Card.cJ, Card.cT], 220), HandType.FourKind),
+        (Hand([Card.cQ, Card.cQ, Card.cQ, Card.cJ, Card.cA], 483), HandType.FourKind),
         (Hand([Card.cQ, Card.cQ, Card.cQ, Card.cA, Card.cA], 899), HandType.FullHouse),
         (Hand([Card.c4, Card.c4, Card.c4, Card.c4, Card.c4], 473), HandType.FiveKind),
         (Hand([Card.c2, Card.c3, Card.c4, Card.c5, Card.c6], 58), HandType.HighCard),
@@ -37,12 +37,12 @@ def test_hand_type(hand: Hand, hand_type: HandType) -> None:
         (
             Hand([Card.cK, Card.cK, Card.c6, Card.c7, Card.c7], 28),
             Hand([Card.cK, Card.cT, Card.cJ, Card.cJ, Card.cT], 220),
-            1,
+            -1,
         ),
         (
             Hand([Card.cQ, Card.cQ, Card.cQ, Card.cJ, Card.cA], 483),
             Hand([Card.cQ, Card.cQ, Card.cQ, Card.cA, Card.cA], 292),
-            -1,
+            1,
         ),
         (
             Hand([Card.cT, Card.c5, Card.c5, Card.cJ, Card.c5], 1),
