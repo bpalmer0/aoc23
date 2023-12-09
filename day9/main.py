@@ -15,13 +15,13 @@ def predict(seq: List[int]) -> int:
         current = diff
     print(f"Found differences")
     print(differences)
-    differences[-1].append(0)
+    differences[-1].insert(0, 0)
     for i in range(len(differences) - 2, -1, -1):
         current = differences[i]
         below = differences[i + 1]
-        current.append(current[-1] + below[-1])
+        current.insert(0, current[0] - below[0])
     print(differences)
-    prediction = differences[0][-1]
+    prediction = differences[0][0]
     print(f"Prediction: {prediction}")
     return prediction
 
