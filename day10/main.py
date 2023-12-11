@@ -95,6 +95,7 @@ def main():
     # determine starting directions
     s_directions = []
     s_pipe = pipe_grid[s_pos[1]][s_pos[0]]
+    print(f"starting pipe at {s_pos}")
     for direction in [NORTH, SOUTH, EAST, WEST]:
         check_pos = (s_pos[0] + direction[0], s_pos[1] + direction[1])
         print(f"{check_pos=}")
@@ -143,14 +144,40 @@ def main():
                         changed = True
                         new_pipe.steps = pipe.steps + 1
         generation += 1
-    print("Numbers:")
-    display_number_grid(pipe_grid)
+    print("Symbols:")
+    display_symbol_grid(pipe_grid)
     max_steps = 0
     for row in pipe_grid:
         for pipe in row:
             if pipe.steps is not None and pipe.steps > max_steps:
                 max_steps = pipe.steps
     print(f"Maximum distance away from start: {max_steps}")
+
+    # part 2
+    print("\n\nPart 2\n\n")
+    for symbol, directions in symbol_to_directions.items():
+        if directions is None or symbol == "S":
+            continue
+        if directions[0] in s_pipe.directions and directions[1] in s_pipe.directions:
+            s_pipe.symbol = symbol
+
+    num_enclosed = 0
+    for row in pipe_grid:
+        symbols = [pipe.get_symbol() for pipe in row]
+        line = "".join(symbols)
+        line = line.replace("-", "")
+        line = line.replace("L7", "|")
+        line = line.replace("FJ", "|")
+        line = line.replace("LJ", "")
+        line = line.replace("F7", "")
+        print(line)
+        enclosed = False
+        for c in line:
+            if c == "|":
+                enclosed = not enclosed
+            elif c == "." and enclosed:
+                num_enclosed += 1
+    print(f"Number of tiles enclosed: {num_enclosed}")
 
 
 if __name__ == "__main__":
