@@ -14,6 +14,7 @@ def process_pattern(pattern: List[str]) -> int:
     mirror_ind = []
     for i in range(max_row):
         mirror = True
+        smudge_fixed = False
         for d in range(len(row_values)):
             j1 = i + d + 1
             j2 = i - d
@@ -22,9 +23,18 @@ def process_pattern(pattern: List[str]) -> int:
             v1 = row_values[j1]
             v2 = row_values[j2]
             if v1 != v2:
-                mirror = False
-                break
-        if mirror:
+                # smudge if numbers differ by a power of two - bitwise 'xor' results in exactly one 1 in the bitstring
+                print(f"{v1=}, {v2=}, {(v1 ^ v2)=}")
+                if not smudge_fixed and "{0:b}".format(v1 ^ v2).count("1") == 1:
+                    print(f"Smudge used on index {j1} or {j2} ({v1} vs {v2})")
+                    smudge_fixed = True
+                    continue
+                # even fixing a smudge won't make these rows equal
+                else:
+                    mirror = False
+                    break
+        # only count the mirror where smudge was fixed
+        if mirror and smudge_fixed:
             mirror_ind.append(i)
     print(f"{mirror_ind=}")
     print(f"{row_values=}")
@@ -35,14 +45,13 @@ def process_pattern(pattern: List[str]) -> int:
 
 
 def main():
-    with open("mini-input") as f:
+    with open("input") as f:
         lines = f.read().strip().split("\n")
         lines.append("")
 
     pattern_rows = []
     sum = 0
     num_pattern = 0
-    print(f"{lines=}")
     for line in lines:
         if line == "":
             print(f"\n\n{num_pattern=}")
