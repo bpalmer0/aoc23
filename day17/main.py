@@ -1,8 +1,6 @@
-from dataclasses import dataclass
-from typing import List, Tuple
-from itertools import permutations
+from dataclasses import dataclass, field
+from typing import List
 
-grid = []
 INF = 1000000
 
 
@@ -14,6 +12,9 @@ class Pos:
     def __add__(self, other: "Pos"):
         return Pos(self.x + other.x, self.y + other.y)
 
+    def __sub__(self, other: "Pos"):
+        return Pos(self.x - other.x, self.y - other.y)
+
     def __eq__(self, other: "Pos"):
         return self.x == other.x and self.y == other.y
 
@@ -21,99 +22,92 @@ class Pos:
         return hash((self.x, self.y))
 
 
-@dataclass
-class Path:
-    positions: List[Pos]
-    directions: List[Pos]
-    cost: int
-
-    def add(self, direction: Pos) -> "Path":
-        new_end = self.positions[-1] + direction
-        try:
-            end_cost = grid[new_end.y][new_end.x]
-        except IndexError:
-            end_cost = INF
-        new_directions = self.directions.copy()
-        new_positions = self.positions.copy()
-        new_directions.append(direction)
-        new_positions.append(new_end)
-        return Path(new_positions, new_directions, self.cost + end_cost)
-
-    def is_complete(self) -> bool:
-        return (
-            self.positions[-1].x == len(grid[0]) - 1
-            and self.positions[-1].y == len(grid) - 1
-        )
-
-    def is_valid(self) -> bool:
-        # cannot cross over itself
-        for pos in self.positions:
-            if self.positions.count(pos) > 1:
-                return False
-
-        x_consecutive = 1
-        y_consecutive = 1
-        prev_x = self.directions[0].x
-        prev_y = self.directions[0].y
-        for dir in self.directions[1:]:
-            if dir.x == prev_x:
-                x_consecutive += 1
-            else:
-                x_consecutive = 1
-
-            if dir.y == prev_y:
-                y_consecutive += 1
-            else:
-                y_consecutive = 1
-
-            if x_consecutive == 3 or y_consecutive == 3:
-                return False
-            prev_x = dir.x
-            prev_y = dir.y
+def is_valid(directions: List[Pos]) -> bool:
+    if len(directions) < 2:
         return True
+    positions = []
+    x_consecutive = 1
+    y_consecutive = 1
+    prev_x = directions[0].x
+    prev_y = directions[0].y
+    current_position = Pos(0, 0)
+    for dir in directions[1:]:
+        new_position = current_position + dir
+        if new_position in positions:
+            return False
+        current_position = new_position
+
+        if dir.x == prev_x:
+            x_consecutive += 1
+        else:
+            x_consecutive = 1
+
+        if dir.y == prev_y:
+            y_consecutive += 1
+        else:
+            y_consecutive = 1
+
+        if x_consecutive == 3 or y_consecutive == 3:
+            return False
+        prev_x = dir.x
+        prev_y = dir.y
+    return True
+
+
+@dataclass
+class Node:
+    pos: Pos
+    cost: int
+    neighbors: List["Node"] = field(default_factory=list)
+    updated_path: List[Pos] = field(default_factory=list)
+    updated_cost: int = INF
+
+    def get_neighbors(self, grid: List[List["Node"]]) -> List["Node"]:
+        neighbors = []
+        for dir in [Pos(1, 0), Pos(0, 1), Pos(-1, 0), Pos(0, -1)]:
+            neighbor_pos = self.pos + dir
+            if (
+                neighbor_pos.x > len(grid[0]) - 1
+                or neighbor_pos.y > len(grid) - 1
+                or neighbor_pos.x < 0
+                or neighbor_pos.y < 0
+            ):
+                continue
+            neighbors.append(grid[neighbor_pos.y][neighbor_pos.x])
+        return neighbors
 
 
 def main():
     with open("mini-input") as f:
         lines = f.read().strip().split("\n")
-    for line in lines:
+    grid = []
+    for r, line in enumerate(lines):
         row = []
-        for c in line:
-            row.append(int(c))
+        for c, char in enumerate(line):
+            row.append(Node(Pos(c, r), int(char)))
         grid.append(row)
 
-    min_x_dir = len(grid[0]) - 1
-    min_y_dir = len(grid) - 1
-    print(min_x_dir + min_y_dir)
-    min_cost = INF
-
-    def get_bitstring(n) -> str:
-        return "{0:b}".format(n)
-
-    def is_valid(b) -> bool:
-        return (
-            "111" not in b
-            and "000" not in b
-            and b.count("1") == min_x_dir
-            and b.count("0") == min_y_dir
-        )
-
-    for i, bitstring in enumerate(
-        filter(is_valid, map(get_bitstring, range(2 ** (min_x_dir + min_y_dir))))
-    ):
-        print(i)
-        path = Path([Pos(0, 0)], [], grid[0][0])
-        for b in bitstring:
-            if b == "1":
-                path = path.add(Pos(1, 0))
-            else:
-                path = path.add(Pos(0, 1))
-            if path.cost > min_cost:
+    start = grid[0][0]
+    start.updated_cost = start.cost
+    end = grid[-1][-1]
+    curr = start
+    while curr.pos != end.pos:
+        # update estimates for neighbors
+        neighbors = curr.get_neighbors(grid)
+        for neighbor in neighbors:
+            new_path = curr.updated_path.copy()
+            new_path.append(neighbor.pos - curr.pos)
+            if not is_valid(new_path):
                 continue
-        if path.cost < min_cost:
-            min_cost = path.cost
-            # print(path)
-    print(min_cost)
+            new_cost = curr.updated_cost + curr.cost
+            if new_cost < neighbor.updated_cost:
+                neighbor.updated_path = new_path
+                neighbor.updated_cost = new_cost
+
+        # select neighbor with lowest updated cost
+        best_neighbor = sorted(neighbors, key=updated_cost)
+
+    print(start.get_neighbors(grid))
 
 
 if __name__ == "__main__":
