@@ -77,6 +77,22 @@ class Node:
         return neighbors
 
 
+def display_path(directions: List[Pos], grid: List[List[Node]]) -> None:
+    current_position = Pos(0, 0)
+    positions = [current_position]
+    for dir in directions:
+        current_position += dir
+        positions.append(current_position)
+    for row in grid:
+        row_str = ""
+        for node in row:
+            if node.pos in positions:
+                row_str += "#"
+            else:
+                row_str += "."
+        print(row_str)
+
+
 def main():
     with open("mini-input") as f:
         lines = f.read().strip().split("\n")
@@ -91,7 +107,13 @@ def main():
     start.updated_cost = start.cost
     end = grid[-1][-1]
     curr = start
-    while curr.pos != end.pos:
+    visited = [start]
+    unvisited = []
+    for row in grid:
+        unvisited += row
+    unvisited.remove(start)
+    while len(unvisited) > 0:
+        # print(f"{curr.pos=}")
         # update estimates for neighbors
         neighbors = curr.get_neighbors(grid)
         for neighbor in neighbors:
@@ -105,9 +127,13 @@ def main():
                 neighbor.updated_cost = new_cost
 
         # select neighbor with lowest updated cost
-        best_neighbor = sorted(neighbors, key=updated_cost)
+        best = sorted(unvisited, key=(lambda n: n.updated_cost))[0]
+        curr = best
+        visited.append(curr)
+        unvisited.remove(curr)
 
-    print(start.get_neighbors(grid))
+    print(end)
+    display_path(end.updated_path, grid)
 
 
 if __name__ == "__main__":
